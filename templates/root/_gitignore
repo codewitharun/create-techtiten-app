@@ -1,0 +1,33 @@
+# deps / builds
+node_modules/
+.expo/
+dist/
+web-build/
+.next/
+out/
+build/
+*.tsbuildinfo
+next-env.d.ts
+
+# generated native projects (CNG: made by `expo prebuild` at build time)
+apps/mobile/android/
+apps/mobile/ios/
+
+# secrets: never commit these
+.env
+.env.*
+credentials/
+*.keystore
+*.jks
+*.p8
+*.p12
+*.mobileprovision
+google-services.json
+GoogleService-Info.plist
+*service-account*.json
+*-firebase-adminsdk-*.json
+
+# misc
+.DS_Store
+.vercel
+*.log
