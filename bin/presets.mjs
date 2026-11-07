@@ -41,7 +41,7 @@ export const FONTS = {
   inter: { label: 'Inter', hint: 'clean UI font', pkg: '@expo-google-fonts/inter', weights: { regular: 'Inter_400Regular', medium: 'Inter_500Medium', bold: 'Inter_700Bold', black: 'Inter_800ExtraBold' }, next: 'Inter', nextWeights: null },
   poppins: { label: 'Poppins', hint: 'round and friendly (consumer apps)', pkg: '@expo-google-fonts/poppins', weights: { regular: 'Poppins_400Regular', medium: 'Poppins_500Medium', bold: 'Poppins_700Bold', black: 'Poppins_800ExtraBold' }, next: 'Poppins', nextWeights: ['400', '500', '700', '800'] },
   'space-grotesk': { label: 'Space Grotesk', hint: 'techy, modern', pkg: '@expo-google-fonts/space-grotesk', weights: { regular: 'SpaceGrotesk_400Regular', medium: 'SpaceGrotesk_500Medium', bold: 'SpaceGrotesk_700Bold', black: 'SpaceGrotesk_700Bold' }, next: 'Space_Grotesk', nextWeights: null },
-  pixel: { label: 'Press Start 2P', hint: 'pixel/8-bit (retro games)', pkg: '@expo-google-fonts/press-start-2p', weights: { regular: 'PressStart2P_400Regular', medium: 'PressStart2P_400Regular', bold: 'PressStart2P_400Regular', black: 'PressStart2P_400Regular' }, next: 'Press_Start_2P', nextWeights: ['400'] },
+  pixel: { label: 'Press Start 2P', hint: 'pixel/8-bit (retro games)', scale: 0.72, pkg: '@expo-google-fonts/press-start-2p', weights: { regular: 'PressStart2P_400Regular', medium: 'PressStart2P_400Regular', bold: 'PressStart2P_400Regular', black: 'PressStart2P_400Regular' }, next: 'Press_Start_2P', nextWeights: ['400'] },
 };
 
 const hex = (h) => h.replace('#', '').padEnd(6, '0').slice(0, 6);

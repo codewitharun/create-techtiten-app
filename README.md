@@ -6,6 +6,8 @@ One command for a new app, with the same structure every time:
 npx create-techtiten-app my-app
 ```
 
+![What you get: the starter phone screens, website and admin panel](https://raw.githubusercontent.com/codewitharun/create-techtiten-app/main/docs/screens.png)
+
 ```
 my-app/
 ├─ apps/mobile        Expo (latest SDK), Expo Router, TypeScript
@@ -33,6 +35,28 @@ Run `npx create-techtiten-app --help` any time to see them all. It asks these qu
 
 Other flags: `--yes` (no questions), `--skip-install`, `--no-git`, `--help`, `--version`.
 
+### Defaults (what you get if you just press Enter, or pass `--yes`)
+| Option | Default |
+|---|---|
+| Display name | folder name in Title Case (`my-app` → `My App`) |
+| Package id | `com.techtiten.` + folder name without dashes (`com.techtiten.myapp`) |
+| Web app | yes |
+| Navigation | stack |
+| State | Zustand + TanStack Query |
+| Theme | `techtiten` (light + dark, follows the phone's setting) |
+| Brand color | from the theme |
+| Font | system |
+| Ads | no |
+
+### Color themes
+![Color theme presets in light and dark](https://raw.githubusercontent.com/codewitharun/create-techtiten-app/main/docs/themes.png)
+
+Your colors end up in `packages/theme/src/colors.ts`: one file, used by the phone app and the website. Change any value there later.
+
+### Fonts
+![Font options](https://raw.githubusercontent.com/codewitharun/create-techtiten-app/main/docs/fonts.png)
+
+
 ```
 npx create-techtiten-app retro-games --yes --no-web --ads --theme=retro --font=pixel --nav=tabs
 npx create-techtiten-app shop --yes --web --theme=sunset --brand=#FF3366 --font=poppins --state=redux
@@ -51,7 +75,7 @@ All options live in one list (`OPTIONS` in `bin/index.mjs`). Theme presets and f
 - One React version for the whole repo (web is pinned to the version Expo installed), so hooks never break.
 
 ## What you get
-**Mobile:** theme provider (system/light/dark, saved), UI primitives (Screen, Card, Text, Button with haptics), state demo, API client + TanStack Query hook, release signing plugin (CI secrets or `credentials/signing.properties`), optional AdMob banner.
+**Mobile:** Reanimated 4 + Worklets + Gesture Handler (SDK-matched, root view already wrapped), theme provider (system/light/dark, saved), UI primitives (Screen, Card, Text, Button with haptics), state demo, API client + TanStack Query hook, release signing plugin (CI secrets or `credentials/signing.properties`), optional AdMob banner.
 
 **Web:** landing page using the same theme colors, `/admin` dashboard behind `ADMIN_USER`/`ADMIN_PASSWORD` (`src/proxy.ts`), `GET /api/health` (shared zod schema), `POST /api/cron/[job]` protected by `CRON_API_KEY` for outside schedulers (Vercel functions are short-lived).
 

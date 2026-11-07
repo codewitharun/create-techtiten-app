@@ -160,10 +160,10 @@ function writeThemeAndFonts(target, a) {
   const f = FONTS[a.font];
   const m = join(target, 'apps/mobile/src/theme/fonts.ts');
   if (!f.pkg) {
-    writeFileSync(m, `// System font (San Francisco / Roboto): nothing to load.\nexport const fonts: Record<'regular' | 'medium' | 'bold' | 'black', string | undefined> = { regular: undefined, medium: undefined, bold: undefined, black: undefined };\nexport const useAppFonts = () => true;\n`);
+    writeFileSync(m, `// System font (San Francisco / Roboto): nothing to load.\nexport const fonts: Record<'regular' | 'medium' | 'bold' | 'black', string | undefined> = { regular: undefined, medium: undefined, bold: undefined, black: undefined };\nexport const useAppFonts = () => true;\n/** Multiplies every font size (wide fonts like pixel ones need smaller text). */\nexport const fontScale = 1;\n`);
   } else {
     const names = [...new Set(Object.values(f.weights))];
-    writeFileSync(m, `// ${f.label} from ${f.pkg}. Text/Button pick the family per weight.\nimport { useFonts, ${names.join(', ')} } from '${f.pkg}';\n\nexport const fonts: Record<'regular' | 'medium' | 'bold' | 'black', string | undefined> = ${JSON.stringify(f.weights)};\n\n/** true once the font files are loaded (the root layout waits for it). */\nexport function useAppFonts() {\n  const [loaded, error] = useFonts({ ${names.join(', ')} });\n  return loaded || !!error;\n}\n`);
+    writeFileSync(m, `// ${f.label} from ${f.pkg}. Text/Button pick the family per weight.\nimport { useFonts, ${names.join(', ')} } from '${f.pkg}';\n\nexport const fonts: Record<'regular' | 'medium' | 'bold' | 'black', string | undefined> = ${JSON.stringify(f.weights)};\n\n/** true once the font files are loaded (the root layout waits for it). */\nexport function useAppFonts() {\n  const [loaded, error] = useFonts({ ${names.join(', ')} });\n  return loaded || !!error;\n}\n\n/** Multiplies every font size (wide fonts like pixel ones need smaller text). */\nexport const fontScale = ${f.scale ?? 1};\n`);
   }
   if (a.web) {
     const w = join(target, 'apps/web/src/app/fonts.ts');
@@ -277,7 +277,7 @@ async function main() {
     s.start('Installing (one install for all workspaces)');
     run('npm', ['install', '--no-audit', '--no-fund', '--loglevel=error'], target, { quiet: true });
     s.message('Adding Expo packages matched to this SDK');
-    const expoPkgs = ['expo-router', 'expo-linking', 'expo-constants', 'expo-status-bar', 'expo-haptics', 'expo-system-ui', 'expo-font', '@expo/vector-icons', 'react-native-safe-area-context', 'react-native-screens', '@react-native-async-storage/async-storage', 'react-dom', 'react-native-web'];
+    const expoPkgs = ['expo-router', 'expo-linking', 'expo-constants', 'expo-status-bar', 'expo-haptics', 'expo-system-ui', 'expo-font', '@expo/vector-icons', 'react-native-safe-area-context', 'react-native-screens', 'react-native-reanimated', 'react-native-worklets', 'react-native-gesture-handler', '@react-native-async-storage/async-storage', 'react-dom', 'react-native-web'];
     if (ads) expoPkgs.push('react-native-google-mobile-ads');
     if (FONTS[a.font].pkg) expoPkgs.push(FONTS[a.font].pkg);
     const expoArgs = ['expo', 'install', ...expoPkgs, '--', '--no-audit', '--no-fund', '--loglevel=error'];
