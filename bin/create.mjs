@@ -40,7 +40,11 @@ export async function create(args) {
   const install = !args.has('--skip-install');
   const vars = templateVars(a);
   const { scope } = d;
-  const s = p.spinner();
+  // The timer shows elapsed seconds, so a long install never looks frozen.
+  const s = p.spinner({ indicator: 'timer' });
+  const steps = 1 + (a.web ? 1 : 0) + (install ? 1 : 0) + (args.has('--no-git') ? 0 : 1);
+  let step = 0;
+  const label = (text) => `[${++step}/${steps}] ${text}`;
 
   // 1. Root + shared packages
   mkdirSync(target, { recursive: true });
@@ -51,9 +55,9 @@ export async function create(args) {
   saveProject(target, a);
 
   // 2. Mobile: latest Expo blank TypeScript app, then our layer on top
-  s.start('Creating the Expo app (latest SDK)');
+  s.start(label('Creating the Expo app (latest SDK, ~30s)'));
   mkdirSync(join(target, 'apps'), { recursive: true });
-  run('npx', ['--yes', 'create-expo-app@latest', 'mobile', '--template', 'blank-typescript', '--no-install'], join(target, 'apps'), { quiet: true });
+  await run('npx', ['--yes', 'create-expo-app@latest', 'mobile', '--template', 'blank-typescript', '--no-install'], join(target, 'apps'), { quiet: true });
   const m = join(target, 'apps/mobile');
   // Keep the SDK template's own app.json values (icons, splash, platform defaults) as config/base.json.
   const sdkBase = existsSync(join(m, 'app.json')) ? readJson(join(m, 'app.json')).expo ?? {} : {};
@@ -75,8 +79,8 @@ export async function create(args) {
 
   // 3. Web: latest Next.js (App Router, TS, Tailwind, src/), then our layer
   if (a.web) {
-    s.start('Creating the Next.js app (latest)');
-    run('npx', ['--yes', 'create-next-app@latest', 'web', '--ts', '--app', '--eslint', '--tailwind', '--src-dir', '--import-alias', '@/*', '--use-npm', '--skip-install', '--disable-git', '--yes'], join(target, 'apps'), { quiet: true });
+    s.start(label('Creating the Next.js app (latest, ~30s)'));
+    await run('npx', ['--yes', 'create-next-app@latest', 'web', '--ts', '--app', '--eslint', '--tailwind', '--src-dir', '--import-alias', '@/*', '--use-npm', '--skip-install', '--disable-git', '--yes'], join(target, 'apps'), { quiet: true });
     const w = join(target, 'apps/web');
     for (const f of ['.gitignore', 'README.md', 'src/app/page.tsx']) rmSync(join(w, f), { force: true }); // page.tsx -> src/app/(site)/page.tsx
     copyTemplate(join(TPL, 'web'), w, vars);
@@ -115,40 +119,41 @@ export async function create(args) {
 
   // 5. Install: one root install, then SDK-matched native packages via expo install
   if (install) {
-    s.start('Installing (one install for all workspaces)');
-    npmInstall(target);
-    s.message('Adding Expo packages matched to this SDK');
-    const added = expoInstall(m, a, mobileExpoPackages(a));
+    p.log.info(pc.dim('Installing takes 2-5 minutes the first time. The timer keeps counting while it works.'));
+    s.start(label('Installing packages (all workspaces at once)'));
+    await npmInstall(target);
+    s.message(`[${step}/${steps}] Adding Expo packages matched to this SDK`);
+    const added = await expoInstall(m, a, mobileExpoPackages(a));
     writeJson(join(m, 'config/plugins.json'), pluginList(a, added));
-    s.message('Adding the rest');
-    npmAdd(target, `${scope}/mobile`, statePackages(a.state));
-    npmAdd(target, `${scope}/shared`, ['zod']);
-    npmAdd(target, `${scope}/shared`, ['vitest'], { dev: true });
-    npmAdd(target, null, ['prettier', 'typescript'], { dev: true });
+    s.message(`[${step}/${steps}] Adding ${d.hasApi ? 'API, database and ' : ''}state packages`);
+    await npmAdd(target, `${scope}/mobile`, statePackages(a.state));
+    await npmAdd(target, `${scope}/shared`, ['zod']);
+    await npmAdd(target, `${scope}/shared`, ['vitest'], { dev: true });
+    await npmAdd(target, null, ['prettier', 'typescript'], { dev: true });
     const db = DB_PACKAGES[d.db];
     if (d.backend === 'express') {
-      npmAdd(target, `${scope}/api`, ['express', 'cors', 'helmet', 'express-rate-limit', 'zod', 'tsx', ...db.deps]);
-      npmAdd(target, `${scope}/api`, ['typescript', '@types/node', '@types/express', '@types/cors', ...db.dev], { dev: true });
+      await npmAdd(target, `${scope}/api`, ['express', 'cors', 'helmet', 'express-rate-limit', 'zod', 'tsx', ...db.deps]);
+      await npmAdd(target, `${scope}/api`, ['typescript', '@types/node', '@types/express', '@types/cors', ...db.dev], { dev: true });
     } else if (d.backend === 'fastify') {
-      npmAdd(target, `${scope}/api`, ['fastify', '@fastify/cors', '@fastify/helmet', '@fastify/rate-limit', 'zod', 'tsx', ...db.deps]);
-      npmAdd(target, `${scope}/api`, ['typescript', '@types/node', ...db.dev], { dev: true });
+      await npmAdd(target, `${scope}/api`, ['fastify', '@fastify/cors', '@fastify/helmet', '@fastify/rate-limit', 'zod', 'tsx', ...db.deps]);
+      await npmAdd(target, `${scope}/api`, ['typescript', '@types/node', ...db.dev], { dev: true });
     } else if (d.backend === 'next') {
-      npmAdd(target, `${scope}/web`, ['zod', ...db.deps]);
-      npmAdd(target, `${scope}/web`, db.dev, { dev: true });
+      await npmAdd(target, `${scope}/web`, ['zod', ...db.deps]);
+      await npmAdd(target, `${scope}/web`, db.dev, { dev: true });
     }
-    if (a.web) pinReact(target, m);
-    s.stop('Installed');
+    if (a.web) { s.message(`[${step}/${steps}] Using one React version for phone and web`); await pinReact(target, m); }
+    s.stop('Packages installed');
   } else {
     writeJson(join(m, 'config/plugins.json'), pluginList(a));
   }
 
   // 6. Git (uses your git name/email; falls back to a neutral author if none is set)
-  if (!args.has('--no-git')) gitInit(target);
+  if (!args.has('--no-git')) { s.start(label('First git commit')); await gitInit(target); s.stop('Git ready'); }
 
   const rel = relative(process.cwd(), target) || '.';
   p.note([
     `cd ${rel}`,
-    ...(d.db === 'mongo' || d.db === 'postgres' ? ['npm run db:up         # local database (Docker)'] : []),
+    ...(d.db === 'mongo' || d.db === 'postgres' ? [`npm run db:up         # local ${d.db === 'mongo' ? 'MongoDB' : 'Postgres'} with Docker (or: brew services start ${d.db === 'mongo' ? 'mongodb-community' : 'postgresql@17'})`] : []),
     ...(d.db === 'postgres' ? ['npm run db:push       # create the tables'] : []),
     d.hasApi ? 'npm run dev           # API + Expo together (a = Android, w = web)' : 'npm run dev           # Expo (a = Android, w = web)',
     d.hasApi ? `API docs              ${d.backend === 'next' ? 'http://localhost:3000/api/docs' : 'http://localhost:4000/docs'}` : null,
@@ -163,16 +168,16 @@ export async function create(args) {
  * `npx expo install` adds config plugins itself, but can't edit app.config.ts. Give it a temporary
  * app.json, then return the plugins it added (they go into config/plugins.json, read by app.config.ts).
  */
-export function expoInstall(m, a, pkgs) {
+export async function expoInstall(m, a, pkgs) {
   const args = ['expo', 'install', ...pkgs, '--', '--no-audit', '--no-fund', '--loglevel=error'];
   renameSync(join(m, 'app.config.ts'), join(m, 'app.config.ts.tmp'));
   writeJson(join(m, 'app.json'), { expo: { name: a.name, slug: a.slug, plugins: [] } });
   try {
     try {
-      run('npx', args, m, { quiet: true });
+      await run('npx', args, m, { quiet: true });
     } catch {
       // Expo's version API unreachable (proxy/offline): use the versions bundled with the installed SDK.
-      run('npx', args, m, { quiet: true, env: { EXPO_OFFLINE: '1' } });
+      await run('npx', args, m, { quiet: true, env: { EXPO_OFFLINE: '1' } });
     }
     return (readJson(join(m, 'app.json')).expo.plugins ?? []).map((x) => (Array.isArray(x) ? x[0] : x));
   } finally {
@@ -183,18 +188,18 @@ export function expoInstall(m, a, pkgs) {
 
 // One React for the whole repo: pin web's react/react-dom to the version Expo installed,
 // otherwise npm can install two Reacts and hooks break ("Invalid hook call").
-function pinReact(target, m) {
+async function pinReact(target, m) {
   const rv = readJson(join(m, 'package.json')).dependencies.react;
   editJson(join(target, 'apps/web/package.json'), (wp) => { wp.dependencies.react = rv; wp.dependencies['react-dom'] = rv; });
   editJson(join(target, 'package.json'), (rp) => { rp.overrides = { ...(rp.overrides ?? {}), react: rv, 'react-dom': rv }; });
-  npmInstall(target);
+  await npmInstall(target);
 }
 
-function gitInit(target) {
+async function gitInit(target) {
   try {
-    run('git', ['init', '-b', 'main'], target, { quiet: true });
-    run('git', ['add', '-A'], target, { quiet: true });
-    try { run('git', ['commit', '-m', 'Initial commit from create-techtiten-app', '--no-verify'], target, { quiet: true }); }
-    catch { run('git', ['-c', 'user.name=create-techtiten-app', '-c', 'user.email=noreply@techtiten.com', 'commit', '-m', 'Initial commit from create-techtiten-app', '--no-verify'], target, { quiet: true }); }
+    await run('git', ['init', '-b', 'main'], target, { quiet: true });
+    await run('git', ['add', '-A'], target, { quiet: true });
+    try { await run('git', ['commit', '-m', 'Initial commit from create-techtiten-app', '--no-verify'], target, { quiet: true }); }
+    catch { await run('git', ['-c', 'user.name=create-techtiten-app', '-c', 'user.email=noreply@techtiten.com', 'commit', '-m', 'Initial commit from create-techtiten-app', '--no-verify'], target, { quiet: true }); }
   } catch { p.log.warn('git init skipped (git missing or commit failed). Run git init yourself.'); }
 }

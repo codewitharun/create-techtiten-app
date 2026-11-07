@@ -1,6 +1,6 @@
 // Small helpers shared by `create` and `add`.
 import * as p from '@clack/prompts';
-import { spawnSync } from 'node:child_process';
+import { spawn } from 'node:child_process';
 import { randomBytes } from 'node:crypto';
 import { existsSync, mkdirSync, readdirSync, readFileSync, statSync, writeFileSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
@@ -17,20 +17,30 @@ export const secret = () => randomBytes(24).toString('base64url');
 export function fail(msg) { p.cancel(msg); process.exit(1); }
 export const cancel = (v) => { if (p.isCancel(v)) fail('Cancelled.'); return v; };
 
+/**
+ * Runs a command without blocking, so the spinner keeps animating (spawnSync froze it,
+ * which made long installs look stuck). Quiet mode keeps the output and prints it only on failure.
+ */
 export function run(cmd, args, cwd, { quiet = false, env = {} } = {}) {
-  const r = spawnSync(cmd, args, { cwd, stdio: quiet ? 'pipe' : 'inherit', shell: process.platform === 'win32', env: { ...process.env, CI: '1', EXPO_NO_TELEMETRY: '1', NEXT_TELEMETRY_DISABLED: '1', ...env } });
-  if (r.status !== 0) {
-    if (quiet) process.stderr.write(String(r.stderr ?? '') + String(r.stdout ?? ''));
-    throw new Error(`Command failed: ${cmd} ${args.join(' ')} (in ${cwd})`);
-  }
-  return String(r.stdout ?? '');
+  return new Promise((resolvePromise, reject) => {
+    const child = spawn(cmd, args, { cwd, stdio: quiet ? ['ignore', 'pipe', 'pipe'] : 'inherit', shell: process.platform === 'win32', env: { ...process.env, CI: '1', EXPO_NO_TELEMETRY: '1', NEXT_TELEMETRY_DISABLED: '1', ...env } });
+    let out = '';
+    child.stdout?.on('data', (d) => { out += d; });
+    child.stderr?.on('data', (d) => { out += d; });
+    child.on('error', reject);
+    child.on('close', (code) => {
+      if (code === 0) return resolvePromise(out);
+      if (quiet) process.stderr.write('\n' + out.slice(-4000));
+      reject(new Error(`Command failed: ${cmd} ${args.join(' ')} (in ${cwd})`));
+    });
+  });
 }
 
 const NPM_QUIET = ['--no-audit', '--no-fund', '--loglevel=error'];
 /** npm install into one workspace (or the root when ws is null). */
-export function npmAdd(target, ws, pkgs, { dev = false } = {}) {
+export async function npmAdd(target, ws, pkgs, { dev = false } = {}) {
   if (!pkgs.length) return;
-  run('npm', ['install', ...(dev ? ['-D'] : []), ...pkgs, ...(ws ? ['-w', ws] : []), ...NPM_QUIET], target, { quiet: true });
+  await run('npm', ['install', ...(dev ? ['-D'] : []), ...pkgs, ...(ws ? ['-w', ws] : []), ...NPM_QUIET], target, { quiet: true });
 }
 export const npmInstall = (target) => run('npm', ['install', ...NPM_QUIET], target, { quiet: true });
 
