@@ -1,6 +1,7 @@
-// App state with Redux Toolkit. Server data (API calls) lives in TanStack Query instead.
+// App state with Redux Toolkit. Server data (API calls) goes through RTK Query (./apiSlice).
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { configureStore, createSlice, type PayloadAction } from '@reduxjs/toolkit';
+import { apiSlice } from './apiSlice';
 
 export type Appearance = 'system' | 'light' | 'dark';
 
@@ -17,7 +18,10 @@ const taps = createSlice({
 });
 
 export const actions = { ...settings.actions, ...taps.actions };
-export const store = configureStore({ reducer: { settings: settings.reducer, taps: taps.reducer } });
+export const store = configureStore({
+  reducer: { settings: settings.reducer, taps: taps.reducer, [apiSlice.reducerPath]: apiSlice.reducer },
+  middleware: (get) => get().concat(apiSlice.middleware),
+});
 export type RootState = ReturnType<typeof store.getState>;
 export type AppDispatch = typeof store.dispatch;
 

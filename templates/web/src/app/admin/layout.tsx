@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { Suspense } from 'react';
 
 // Everything under /admin is behind HTTP basic auth (src/proxy.ts, ADMIN_USER / ADMIN_PASSWORD).
 export default function AdminLayout({ children }: LayoutProps<'/admin'>) {
@@ -11,7 +12,10 @@ export default function AdminLayout({ children }: LayoutProps<'/admin'>) {
           <Link href="/" className="rounded-lg px-3 py-2 hover:bg-surface-alt">View site</Link>
         </nav>
       </aside>
-      <main className="flex-1 p-8">{children}</main>
+      <main className="flex-1 p-8">
+        {/* Admin pages read live data, so they render per request inside this boundary. */}
+        <Suspense fallback={<div className="text-text-muted">Loading…</div>}>{children}</Suspense>
+      </main>
     </div>
   );
 }

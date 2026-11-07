@@ -1,0 +1,7 @@
+{
+  "name": "__SCOPE__/config",
+  "version": "0.0.0",
+  "private": true,
+  "main": "src/index",
+  "types": "src/index.ts"
+}

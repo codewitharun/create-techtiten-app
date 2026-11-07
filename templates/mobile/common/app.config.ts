@@ -1,9 +1,10 @@
 import type { ExpoConfig } from 'expo/config';
+import app from '../../packages/config/src/app.json';
 import base from './config/base.json';
 import pluginNames from './config/plugins.json';
 
-// config/base.json = what this Expo SDK's own template ships (icons, splash, platform defaults),
-// saved by create-techtiten-app. Our settings go on top, so new SDK defaults are never lost.
+// Names, package id, scheme and domains come from packages/config/src/app.json (shared with the API and web).
+// config/base.json = what this Expo SDK's own template ships (icons, splash, platform defaults).
 // config/plugins.json = config plugins of the installed packages.
 
 // versionCode/buildNumber come from CI (BUILD_NUMBER = GitHub run number): every Play upload is higher.
@@ -22,13 +23,32 @@ const sdkDefaults = base as Partial<ExpoConfig>;
 
 const config: ExpoConfig = {
   ...sdkDefaults,
-  name: '__APP_NAME__',
-  slug: '__APP_SLUG__',
-  scheme: '__APP_SLUG__',
+  name: app.name,
+  slug: app.slug,
+  scheme: app.scheme,
   version: '1.0.0',
   userInterfaceStyle: 'automatic',
-  ios: { ...sdkDefaults.ios, bundleIdentifier: '__PACKAGE_ID__', buildNumber: String(buildNumber) },
-  android: { ...sdkDefaults.android, package: '__PACKAGE_ID__', versionCode: buildNumber },
+  ios: {
+    ...sdkDefaults.ios,
+    bundleIdentifier: app.packageId,
+    buildNumber: String(buildNumber),
+    // https deep links: https://<web domain>/... opens the app (needs apple-app-site-association on the site)
+    associatedDomains: [`applinks:${app.domains.web}`],
+  },
+  android: {
+    ...sdkDefaults.android,
+    package: app.packageId,
+    versionCode: buildNumber,
+    // https deep links (App Links). The site must serve /.well-known/assetlinks.json (apps/web does).
+    intentFilters: [
+      {
+        action: 'VIEW',
+        autoVerify: true,
+        data: [{ scheme: 'https', host: app.domains.web }],
+        category: ['BROWSABLE', 'DEFAULT'],
+      },
+    ],
+  },
   plugins,
   experiments: { ...sdkDefaults.experiments, typedRoutes: true },
 };

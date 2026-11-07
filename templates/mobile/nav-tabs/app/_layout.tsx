@@ -8,7 +8,7 @@ function Root() {
   return (
     <>
       <StatusBar style={t.mode === 'dark' ? 'light' : 'dark'} />
-      {/* Tabs live in app/(tabs). Push full-screen pages (details, modals) on this stack. */}
+      {/* Tabs live in app/(tabs). Full-screen pages (kit, legal, details) push on this stack. */}
       <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: t.colors.background } }}>
         <Stack.Screen name="(tabs)" />
       </Stack>

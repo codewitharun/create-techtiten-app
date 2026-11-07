@@ -1,5 +1,12 @@
-// Logic both apps use: money/date helpers, shared types and zod schemas.
-// The same schema validates input in the API and parses responses in the app.
+// Logic both apps use. Pure TypeScript: no React, no Node-only APIs.
 export * from './format';
 export * from './money';
-export * from './schemas';
+export * from './dates';
+export * from './validators';
+export * from './fn';
+export * from './collections';
+export * from './errors';
+export * from './contract';
+export * from './routes';
+export * from './openapi';
+export * from './legal';
