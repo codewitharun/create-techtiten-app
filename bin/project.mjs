@@ -104,7 +104,7 @@ export function writeDockerCompose(target, a) {
     : d.db === 'postgres'
       ? `  postgres:\n    image: postgres:17\n    environment:\n      POSTGRES_HOST_AUTH_METHOD: trust # local only: no password, port bound to this computer\n      POSTGRES_DB: ${name}\n    ports: ["127.0.0.1:5432:5432"]\n    volumes: [pg:/var/lib/postgresql/data]\nvolumes:\n  pg:\n`
       : null;
-  if (svc) writeText(join(target, 'docker-compose.yml'), `# Local database for development only (docker compose up -d). Reachable from this computer only.\nservices:\n${svc}`);
+  if (svc) writeText(join(target, 'docker-compose.yml'), `# Local database for development only. Start: npm run db:up (needs Docker Desktop). Stop: docker compose down.\n# No Docker? Install it with Homebrew instead (README: "Database without Docker").\n# Reachable from this computer only.\nservices:\n${svc}`);
 }
 
 // ---------------------------------------------------------------- server code
@@ -242,7 +242,7 @@ export function writeRootScripts(target, a) {
   };
   pkg.scripts = s;
   writeJson(join(target, 'package.json'), pkg);
-  if (!d.hasApi) rmSync(join(target, 'scripts/dev.mjs'), { force: true });
+  if (!d.hasApi) rmSync(join(target, 'scripts'), { recursive: true, force: true }); // dev.mjs is only for API + app
 }
 
 export function writeReadme(target, a) {
@@ -261,13 +261,15 @@ export function writeReadme(target, a) {
     '| Folder | What |', '|---|---|', ...rows.map(([f, w]) => `| \`${f}\` | ${w} |`), '',
     '## Run', '```',
     'npm install',
-    ...(d.db === 'mongo' || d.db === 'postgres' ? ['npm run db:up       # local database (Docker)'] : []),
+    ...(d.db === 'mongo' || d.db === 'postgres' ? ['npm run db:up       # local database with Docker (see below for no Docker)'] : []),
     ...(d.db === 'postgres' ? ['npm run db:push     # create the tables'] : []),
     d.hasApi ? 'npm run dev         # API + Expo together (press a for Android, w for web)' : 'npm run dev         # Expo (press a for Android, w for web)',
     ...(a.web ? ['npm run web         # Next.js on http://localhost:3000'] : []),
     'npm run typecheck   # every workspace',
     'npm test            # shared tests',
     '```',
+    ...(d.db === 'mongo' ? ['', '### Database without Docker', '```', 'brew tap mongodb/brew && brew install mongodb-community && brew services start mongodb-community', '```', 'The MONGODB_URI in `' + d.backendDir + '/' + d.envFile + '` already points to it (port 27017).'] : []),
+    ...(d.db === 'postgres' ? ['', '### Database without Docker', '```', 'brew install postgresql@17 && brew services start postgresql@17', `createdb ${a.slug.replace(/-/g, '_')}`, '```', 'Then change the user in DATABASE_URL in `' + d.backendDir + '/' + d.envFile + '` to your Mac username (`whoami`): `postgres://<you>@localhost:5432/' + a.slug.replace(/-/g, '_') + '`.'] : []),
   ];
   if (d.hasApi) lines.push('',
     '## API', `- Docs with "Try it" for every route: **${api}/docs** (open in development; in production log in with password = \`ADMIN_TOKEN\`, or set \`DOCS_PUBLIC=true\`).`,

@@ -36,8 +36,8 @@ export async function add(args) {
     const old = FONTS[a.font];
     a.font = arg;
     writeThemeAndFonts(target, a);
-    if (FONTS[arg].pkg) expoInstall(m, a, [FONTS[arg].pkg]);
-    if (old.pkg && old.pkg !== FONTS[arg].pkg) run('npm', ['uninstall', old.pkg, '-w', `${a.scope}/mobile`], target, { quiet: true });
+    if (FONTS[arg].pkg) await expoInstall(m, a, [FONTS[arg].pkg]);
+    if (old.pkg && old.pkg !== FONTS[arg].pkg) await run('npm', ['uninstall', old.pkg, '-w', `${a.scope}/mobile`], target, { quiet: true });
     p.log.success(`Font is now ${FONTS[arg].label}.`);
   }
 
@@ -45,7 +45,7 @@ export async function add(args) {
     if (a[what]) fail(`${what} is already on in this project.`);
     a[what] = true;
     writeMobileFeatures(target, a);
-    const added = expoInstall(m, a, what === 'ads' ? ['react-native-google-mobile-ads'] : ['expo-notifications']);
+    const added = await expoInstall(m, a, what === 'ads' ? ['react-native-google-mobile-ads'] : ['expo-notifications']);
     const current = readJson(join(m, 'config/plugins.json')).map((x) => (Array.isArray(x) ? x[0] : x));
     writeJson(join(m, 'config/plugins.json'), pluginList(a, [...current, ...added].filter((x) => x !== './plugins/withSigning.js' && x !== 'expo-router')));
     if (what === 'notifications' && derive(a).hasApi) addPushServer(target, a);
