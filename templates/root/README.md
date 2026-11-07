@@ -20,3 +20,12 @@ npm run typecheck  # every workspace
 ## Add a package
 - Native/Expo package: `cd apps/mobile && npx expo install <pkg>` (picks the SDK-matched version)
 - Anything else: `npm install <pkg> -w __SCOPE__/mobile` (or `__SCOPE__/web`, `__SCOPE__/shared`)
+
+## Upgrade later
+New projects always start on the latest Expo / Next.js. To move this project to newer versions:
+```
+npm run upgrade:mobile   # latest Expo SDK + matching React Native and packages
+npm run upgrade:web      # latest Next.js
+npm run typecheck
+```
+Read the Expo SDK and Next.js release notes first: big versions can need small code changes.

@@ -16,16 +16,32 @@ my-app/
 └─ AGENTS.md, STATUS.md, .gitignore (secrets blocked)
 ```
 
-## It asks
-| Question | Options |
-|---|---|
-| Display name, package id | e.g. `Retro Games`, `com.techtiten.retrogames` |
-| Web | Next.js app for website + admin (basic auth) + API (health, cron jobs) |
-| State | Zustand + TanStack Query (default) or Redux Toolkit + TanStack Query |
-| Ads | AdMob banner (test ads in dev) |
+## Options
+Run `npx create-techtiten-app --help` any time to see them all. It asks these questions, or you pass them as flags:
 
-Skip the questions: `npx create-techtiten-app my-app --yes --web --state=zustand --ads --name="My App" --package=com.techtiten.myapp`
-Other flags: `--no-web`, `--no-ads`, `--skip-install`, `--no-git`.
+| Question | Flag | Choices |
+|---|---|---|
+| Display name | `--name="My App"` | anything |
+| Package id | `--package=com.techtiten.myapp` | permanent once on Play |
+| Web app | `--web` / `--no-web` | Next.js: website + `/admin` + `/api` |
+| Navigation | `--nav=stack` / `--nav=tabs` | stack, bottom tabs |
+| State | `--state=zustand` / `--state=redux` | both with TanStack Query |
+| Color theme | `--theme=<preset>` | `techtiten`, `ocean`, `sunset`, `royal`, `mono`, `retro` (green LCD) |
+| Brand color | `--brand=#FF3366` | optional, replaces the preset's brand color |
+| Font | `--font=<font>` | `system`, `inter`, `poppins`, `space-grotesk`, `pixel` (Press Start 2P) |
+| Ads | `--ads` / `--no-ads` | AdMob banner, test ads in development |
+
+Other flags: `--yes` (no questions), `--skip-install`, `--no-git`, `--help`, `--version`.
+
+```
+npx create-techtiten-app retro-games --yes --no-web --ads --theme=retro --font=pixel --nav=tabs
+npx create-techtiten-app shop --yes --web --theme=sunset --brand=#FF3366 --font=poppins --state=redux
+```
+
+Every generated project also has `npm run format` (Prettier), `npm run upgrade:mobile` (latest Expo SDK) and `npm run upgrade:web` (latest Next.js).
+
+## Add an option to this CLI
+All options live in one list (`OPTIONS` in `bin/index.mjs`). Theme presets and fonts are in `bin/presets.mjs`. Add an entry and it appears in the questions, the flags and `--help`.
 
 ## Always the latest
 - The base apps come from `create-expo-app@latest` and `create-next-app@latest`, so a new project starts on the newest Expo SDK and Next.js.

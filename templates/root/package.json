@@ -1,13 +1,21 @@
 {
   "name": "__APP_SLUG__",
   "private": true,
-  "workspaces": ["apps/*", "packages/*"],
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
   "scripts": {
     "mobile": "npm run start -w __SCOPE__/mobile",
     "android": "npm run android -w __SCOPE__/mobile",
     "web": "npm run dev -w __SCOPE__/web",
     "build:web": "npm run build -w __SCOPE__/web",
-    "typecheck": "npm run typecheck --workspaces --if-present"
+    "typecheck": "npm run typecheck --workspaces --if-present",
+    "format": "prettier --write .",
+    "upgrade:mobile": "cd apps/mobile && npx expo install expo@latest && npx expo install --fix",
+    "upgrade:web": "npm install next@latest eslint-config-next@latest -w __SCOPE__/web"
   },
-  "engines": { "node": ">=20.19" }
+  "engines": {
+    "node": ">=20.19"
+  }
 }

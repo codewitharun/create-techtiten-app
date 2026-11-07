@@ -16,7 +16,7 @@ export default function Home() {
     <Screen>
       <Card>
         <Text size="xl" weight="black">Welcome to __APP_NAME__</Text>
-        <Text muted>Edit app/index.tsx to start. Colors come from packages/theme, helpers from packages/shared.</Text>
+        <Text muted>Edit src/screens/Home.tsx to start. Colors come from packages/theme, helpers from packages/shared.</Text>
       </Card>
 
       <Card>

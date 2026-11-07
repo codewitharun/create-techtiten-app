@@ -1,6 +1,7 @@
 import { Pressable, Text as RNText, View, type PressableProps, type TextProps, type ViewProps } from 'react-native';
 import * as Haptics from 'expo-haptics';
 import { useTheme } from '@/theme';
+import { fonts } from '@/theme/fonts';
 
 export function Screen({ style, ...rest }: ViewProps) {
   const t = useTheme();
@@ -14,7 +15,9 @@ export function Card({ style, ...rest }: ViewProps) {
 
 export function Text({ style, muted, size = 'md', weight = 'regular', ...rest }: TextProps & { muted?: boolean; size?: keyof ReturnType<typeof useTheme>['fontSize']; weight?: keyof ReturnType<typeof useTheme>['fontWeight'] }) {
   const t = useTheme();
-  return <RNText style={[{ color: muted ? t.colors.textMuted : t.colors.text, fontSize: t.fontSize[size], fontWeight: t.fontWeight[weight] }, style]} {...rest} />;
+  // Custom fonts carry their weight in the family name (fonts.bold…); the system font uses fontWeight.
+  const family = fonts[weight];
+  return <RNText style={[{ color: muted ? t.colors.textMuted : t.colors.text, fontSize: t.fontSize[size] }, family ? { fontFamily: family } : { fontWeight: t.fontWeight[weight] }, style]} {...rest} />;
 }
 
 export function Button({ title, variant = 'primary', onPress, style, ...rest }: PressableProps & { title: string; variant?: 'primary' | 'ghost' }) {
@@ -31,7 +34,7 @@ export function Button({ title, variant = 'primary', onPress, style, ...rest }: 
         alignItems: 'center', opacity: state.pressed ? 0.8 : 1,
       }, typeof style === 'function' ? style(state) : style]}
       {...rest}>
-      <RNText style={{ color: primary ? t.colors.onBrand : t.colors.text, fontWeight: t.fontWeight.bold, fontSize: t.fontSize.md }}>{title}</RNText>
+      <RNText style={[{ color: primary ? t.colors.onBrand : t.colors.text, fontSize: t.fontSize.md }, fonts.bold ? { fontFamily: fonts.bold } : { fontWeight: t.fontWeight.bold }]}>{title}</RNText>
     </Pressable>
   );
 }
