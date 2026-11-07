@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import { cssVariables } from '__SCOPE__/theme';
+import { appFontClass } from './fonts';
 import './globals.css';
 
 export const metadata: Metadata = {
@@ -13,7 +14,7 @@ const themeCss = `:root{${toCss(cssVariables('light'))}}@media (prefers-color-sc
 
 export default function RootLayout({ children }: LayoutProps<'/'>) {
   return (
-    <html lang="en" className="h-full antialiased">
+    <html lang="en" className={`h-full antialiased ${appFontClass}`}>
       <head>
         <style dangerouslySetInnerHTML={{ __html: themeCss }} />
       </head>

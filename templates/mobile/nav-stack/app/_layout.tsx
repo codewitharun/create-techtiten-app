@@ -1,8 +1,8 @@
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
-import { SafeAreaProvider } from 'react-native-safe-area-context';
-import { Providers } from '@/state/Providers';
-import { ThemeProvider, useTheme } from '@/theme';
+import { AppProviders } from '@/AppProviders';
+import { useTheme } from '@/theme';
+import { fonts } from '@/theme/fonts';
 
 function ThemedStack() {
   const t = useTheme();
@@ -13,6 +13,7 @@ function ThemedStack() {
         screenOptions={{
           headerStyle: { backgroundColor: t.colors.background },
           headerTintColor: t.colors.text,
+          headerTitleStyle: { fontFamily: fonts.bold },
           headerShadowVisible: false,
           contentStyle: { backgroundColor: t.colors.background },
         }}>
@@ -25,12 +26,8 @@ function ThemedStack() {
 
 export default function RootLayout() {
   return (
-    <SafeAreaProvider>
-      <Providers>
-        <ThemeProvider>
-          <ThemedStack />
-        </ThemeProvider>
-      </Providers>
-    </SafeAreaProvider>
+    <AppProviders>
+      <ThemedStack />
+    </AppProviders>
   );
 }

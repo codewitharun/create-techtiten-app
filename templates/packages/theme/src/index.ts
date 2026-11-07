@@ -1,37 +1,10 @@
 // One theme for the phone app and the website. Change a color here and both update.
 export type Mode = 'light' | 'dark';
 
-export const palette = {
-  brand: '#00C389',
-  brandStrong: '#00A372',
-  accent: '#7C5CFF',
-  danger: '#E5484D',
-  warning: '#E9A049',
-  success: '#2EAD5B',
-} as const;
-
-export const colors = {
-  light: {
-    background: '#F7F8FA',
-    surface: '#FFFFFF',
-    surfaceAlt: '#EEF0F3',
-    border: '#E2E5EA',
-    text: '#0B0D12',
-    textMuted: '#5B6270',
-    onBrand: '#FFFFFF',
-    ...palette,
-  },
-  dark: {
-    background: '#0B0B12',
-    surface: '#15151F',
-    surfaceAlt: '#1D1D2A',
-    border: '#2A2A38',
-    text: '#ECEDF2',
-    textMuted: '#9A9CAB',
-    onBrand: '#04110C',
-    ...palette,
-  },
-} as const;
+// colors.ts is written by create-techtiten-app from the theme preset you picked (__THEME_LABEL__).
+// Edit it freely: both the phone app and the website read it.
+import { colors } from './colors';
+export { colors };
 
 export type ColorName = keyof (typeof colors)['light'];
 export type Colors = Record<ColorName, string>;
