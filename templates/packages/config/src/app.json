@@ -1,0 +1,11 @@
+{
+  "name": "__APP_NAME__",
+  "slug": "__APP_SLUG__",
+  "packageId": "__PACKAGE_ID__",
+  "scheme": "__APP_SLUG__",
+  "domains": { "web": "__APP_SLUG__.techtiten.com", "api": "__API_DOMAIN__" },
+  "ports": { "api": 4000, "web": 3000, "expo": 8081 },
+  "backend": "__BACKEND__",
+  "support": { "email": "support@techtiten.com", "company": "Techtiten" },
+  "storeUrl": "https://play.google.com/store/apps/details?id=__PACKAGE_ID__"
+}

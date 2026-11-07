@@ -2,24 +2,14 @@ import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { AppProviders } from '@/AppProviders';
 import { useTheme } from '@/theme';
-import { fonts } from '@/theme/fonts';
 
-function ThemedStack() {
+function Root() {
   const t = useTheme();
   return (
     <>
       <StatusBar style={t.mode === 'dark' ? 'light' : 'dark'} />
-      <Stack
-        screenOptions={{
-          headerStyle: { backgroundColor: t.colors.background },
-          headerTintColor: t.colors.text,
-          headerTitleStyle: { fontFamily: fonts.bold },
-          headerShadowVisible: false,
-          contentStyle: { backgroundColor: t.colors.background },
-        }}>
-        <Stack.Screen name="index" options={{ title: '__APP_NAME__' }} />
-        <Stack.Screen name="settings" options={{ title: 'Settings' }} />
-      </Stack>
+      {/* Every screen draws its own <Header> (src/ui/Header.tsx), so headers look the same everywhere. */}
+      <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: t.colors.background } }} />
     </>
   );
 }
@@ -27,7 +17,7 @@ function ThemedStack() {
 export default function RootLayout() {
   return (
     <AppProviders>
-      <ThemedStack />
+      <Root />
     </AppProviders>
   );
 }

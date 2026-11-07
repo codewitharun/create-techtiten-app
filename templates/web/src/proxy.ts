@@ -1,19 +1,18 @@
 import { NextResponse, type NextRequest } from 'next/server';
 
-// HTTP basic auth for the admin panel and admin APIs. Set ADMIN_USER and ADMIN_PASSWORD
-// in Vercel (and in apps/web/.env.local for development). Swap for real auth later if you need it.
+// HTTP basic auth for the admin panel: any user name, password = ADMIN_TOKEN (same secret as the
+// admin API routes). Set it in Vercel and in apps/web/.env.local. Swap for real auth later if needed.
+// (Admin API routes under /api/admin/* check the token themselves: Authorization: Bearer ADMIN_TOKEN.)
 export function proxy(request: NextRequest) {
-  const user = process.env.ADMIN_USER;
-  const pass = process.env.ADMIN_PASSWORD;
-  if (!user || !pass) return new NextResponse('Admin is locked: set ADMIN_USER and ADMIN_PASSWORD.', { status: 503 });
+  const token = process.env.ADMIN_TOKEN;
+  if (!token) return new NextResponse('Admin is locked: set ADMIN_TOKEN.', { status: 503 });
 
-  const header = request.headers.get('authorization') ?? '';
-  const [scheme, encoded] = header.split(' ');
+  const [scheme, encoded] = (request.headers.get('authorization') ?? '').split(' ');
   if (scheme === 'Basic' && encoded) {
-    const [u, ...rest] = atob(encoded).split(':');
-    if (same(u, user) && same(rest.join(':'), pass)) return NextResponse.next();
+    const pass = atob(encoded).split(':').slice(1).join(':');
+    if (same(pass, token)) return NextResponse.next();
   }
-  return new NextResponse('Login required', { status: 401, headers: { 'WWW-Authenticate': 'Basic realm="admin"' } });
+  return new NextResponse('Login required', { status: 401, headers: { 'WWW-Authenticate': 'Basic realm="admin (password = ADMIN_TOKEN)"' } });
 }
 
 // Compare without exiting early, so the time taken doesn't reveal how much matched.
@@ -23,4 +22,4 @@ function same(a: string, b: string) {
   return diff === 0;
 }
 
-export const config = { matcher: ['/admin/:path*', '/api/admin/:path*'] };
+export const config = { matcher: ['/admin/:path*'] };

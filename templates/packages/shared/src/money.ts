@@ -9,5 +9,6 @@ export function splitEvenly(total: number, parts: number): number[] {
   return Array.from({ length: parts }, (_, i) => base + (i < extra ? 1 : 0));
 }
 
+/** Rupees -> paise (store money as integers to avoid 0.1 + 0.2 problems). */
 export const toMinor = (amount: number) => Math.round(amount * 100);
 export const fromMinor = (minor: number) => minor / 100;

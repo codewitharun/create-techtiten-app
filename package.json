@@ -1,6 +1,6 @@
 {
   "name": "create-techtiten-app",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Scaffold a Techtiten app: Expo (Android/iOS) + optional Next.js (web, admin panel, API) with a shared theme and shared logic. Always on the latest Expo and Next.js.",
   "type": "module",
   "bin": {

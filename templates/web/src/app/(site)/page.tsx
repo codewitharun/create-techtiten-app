@@ -11,8 +11,14 @@ export default function Home() {
       </div>
       <div className="flex flex-wrap gap-3">
         <Link href="/admin" className="rounded-xl bg-brand px-5 py-3 font-bold text-on-brand">Open admin</Link>
-        <a href="/api/health" className="rounded-xl border border-border px-5 py-3 font-bold">API health</a>
+        <a href="/api/docs" className="rounded-xl border border-border px-5 py-3 font-bold">API docs</a>
       </div>
+      <nav className="flex flex-wrap gap-4 text-sm text-text-muted">
+        <Link href="/legal/privacy" className="hover:underline">Privacy</Link>
+        <Link href="/legal/terms" className="hover:underline">Terms</Link>
+        <Link href="/legal/delete-account" className="hover:underline">Delete account</Link>
+        <Link href="/legal/support" className="hover:underline">Support</Link>
+      </nav>
     </main>
   );
 }

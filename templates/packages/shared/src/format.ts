@@ -2,17 +2,24 @@ export function formatCurrency(amount: number, currency = 'INR', locale = 'en-IN
   return new Intl.NumberFormat(locale, { style: 'currency', currency, maximumFractionDigits: 2 }).format(amount);
 }
 
-export function formatDate(d: Date | number | string, locale = 'en-IN'): string {
-  return new Intl.DateTimeFormat(locale, { day: 'numeric', month: 'short', year: 'numeric' }).format(new Date(d));
+/** Indian short form: 950 -> "950", 12,500 -> "12.5K", 2,50,000 -> "2.5L", 3,40,00,000 -> "3.4Cr". */
+export function formatCompactIN(n: number): string {
+  const sign = n < 0 ? '-' : '';
+  const a = Math.abs(n);
+  const fmt = (v: number, unit: string) => `${sign}${Number(v.toFixed(v < 10 ? 1 : 0))}${unit}`;
+  if (a >= 1e7) return fmt(a / 1e7, 'Cr');
+  if (a >= 1e5) return fmt(a / 1e5, 'L');
+  if (a >= 1e3) return fmt(a / 1e3, 'K');
+  return `${sign}${Math.round(a)}`;
 }
 
-/** "just now", "5 min ago", "3 h ago", "2 d ago" */
-export function timeAgo(d: Date | number | string, now = Date.now()): string {
-  const s = Math.max(0, Math.round((now - new Date(d).getTime()) / 1000));
-  if (s < 45) return 'just now';
-  if (s < 3600) return `${Math.round(s / 60)} min ago`;
-  if (s < 86400) return `${Math.round(s / 3600)} h ago`;
-  return `${Math.round(s / 86400)} d ago`;
-}
+/** 0.256 -> "25.6%" */
+export const formatPercent = (ratio: number, digits = 1) => `${Number((ratio * 100).toFixed(digits))}%`;
 
 export const clamp = (n: number, min: number, max: number) => Math.min(max, Math.max(min, n));
+
+/** "arun kumar" -> "AK" (avatars) */
+export const initials = (name: string) => name.trim().split(/\s+/).slice(0, 2).map((w) => w[0]?.toUpperCase() ?? '').join('');
+
+/** "1 item", "3 items" */
+export const plural = (n: number, one: string, many = `${one}s`) => `${n} ${n === 1 ? one : many}`;
