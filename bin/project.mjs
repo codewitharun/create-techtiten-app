@@ -74,7 +74,7 @@ export const DB_PACKAGES = {
 /** Local defaults for the dev env file (git-ignored). */
 function dbEnvLines(db, slug) {
   if (db === 'mongo') return [`MONGODB_URI=mongodb://127.0.0.1:27017/${slug}`];
-  if (db === 'postgres') return [`DATABASE_URL=postgres://postgres:postgres@localhost:5432/${slug.replace(/-/g, '_')}`];
+  if (db === 'postgres') return [`DATABASE_URL=postgres://postgres@localhost:5432/${slug.replace(/-/g, '_')}`];
   if (db === 'firestore') return ['# FIREBASE_SERVICE_ACCOUNT={"type":"service_account",...}  (one line; or run `gcloud auth application-default login`)'];
   return [];
 }
@@ -100,11 +100,11 @@ export function writeDockerCompose(target, a) {
   const d = derive(a);
   const name = a.slug.replace(/-/g, '_');
   const svc = d.db === 'mongo'
-    ? `  mongo:\n    image: mongo:8\n    ports: ["27017:27017"]\n    volumes: [mongo:/data/db]\nvolumes:\n  mongo:\n`
+    ? `  mongo:\n    image: mongo:8\n    ports: ["127.0.0.1:27017:27017"]\n    volumes: [mongo:/data/db]\nvolumes:\n  mongo:\n`
     : d.db === 'postgres'
-      ? `  postgres:\n    image: postgres:17\n    environment:\n      POSTGRES_PASSWORD: postgres\n      POSTGRES_DB: ${name}\n    ports: ["5432:5432"]\n    volumes: [pg:/var/lib/postgresql/data]\nvolumes:\n  pg:\n`
+      ? `  postgres:\n    image: postgres:17\n    environment:\n      POSTGRES_HOST_AUTH_METHOD: trust # local only: no password, port bound to this computer\n      POSTGRES_DB: ${name}\n    ports: ["127.0.0.1:5432:5432"]\n    volumes: [pg:/var/lib/postgresql/data]\nvolumes:\n  pg:\n`
       : null;
-  if (svc) writeText(join(target, 'docker-compose.yml'), `# Local database for development: docker compose up -d\nservices:\n${svc}`);
+  if (svc) writeText(join(target, 'docker-compose.yml'), `# Local database for development only (docker compose up -d). Reachable from this computer only.\nservices:\n${svc}`);
 }
 
 // ---------------------------------------------------------------- server code

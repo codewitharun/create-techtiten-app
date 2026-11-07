@@ -1,4 +1,4 @@
-// Postgres through Drizzle ORM + postgres.js. DATABASE_URL: local `postgres://postgres:postgres@localhost:5432/<name>`
+// Postgres through Drizzle ORM + postgres.js. DATABASE_URL: local `postgres://postgres@localhost:5432/<name>`
 // (docker compose up -d) or Neon / Supabase / any Postgres in production.
 // Tables live in src/db/schema.ts; `npm run db:push` creates/updates them.
 import { drizzle, type PostgresJsDatabase } from 'drizzle-orm/postgres-js';
